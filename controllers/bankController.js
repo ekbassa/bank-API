@@ -73,7 +73,25 @@ export const updateUser = async (req, res, next) => {};
 // @des delete a User
 // @route Delete /api/v1/users/:id
 // @access GET /api/v1/users
-export const deleteUser = async (req, res, next) => {};
+export const deleteUser = async (req, res, next) => {
+  try {
+    const users = readBankUsersFromFile();
+    const newUsersList = users.filter((user) => user.id !== req.params.id);
+    
+    //check if a user was deleted by comparing the length of the two arrays
+    if (users.length > newUsersList.length){
+        writeBankUsersToFile(newUsersList);
+        res.status(STATUS_CODE.OK).send(`User with id ${req.params.id} was deleted successfully`)
+    }else{
+        // user was not found
+        res.status(STATUS_CODE.NOT_FOUND)
+        throw new Error('User was not found!')
+    }
+    // res.send(users);
+  } catch (error) {
+    next(error);
+  }
+};
 
 // @des Deposit Cash to a User
 // @route GET /api/v1/users/:id
