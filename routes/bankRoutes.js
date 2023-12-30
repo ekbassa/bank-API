@@ -14,22 +14,22 @@ import {
 const router = express.Router();
 
 // Route to get all users
-router.get("/", getAllUsers);
-
-//Route do get a single User by ID
-router.get("/:id", getUserById);
+router.get("/users", getAllUsers);
 
 //Route to create a new User
-router.post("/", createUser);
+router.post("/users", createUser);
+
+//Route do get a single User by ID
+router.get("/users/:id", getUserById);
 
 //Route do update a User
-router.put("/:id", updateUser);
+router.put("/users/:id", updateUser);
 
 //Route to delete a User
-router.delete("/:id", deleteUser);
+router.delete("/users/:id", deleteUser);
 
 //Route to deposit cash to a User
-router.put("/:id", depositCashToUser);
+router.put("/transactions/deposit-cash/:id", depositCashToUser);
 
 //Route to Update User Credit
 router.put("./:id", updateUserCredit);
