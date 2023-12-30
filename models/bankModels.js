@@ -3,13 +3,18 @@ import { filePath } from "../utils/dataFilePath.js";
 
 const readBankUsersFromFile = () => {
   try {
+    if (!fs.existsSync(filePath)){
+      throw new Error (`File not found: ${filePath}`)
+    }
+
     const usersFileData = fs.readFileSync(filePath,'utf-8');
     return JSON.parse(usersFileData);
 
   } catch (error) {
-    console.log(" ", error);
-    throw new Error('Error: failed to ready users file!')
+    throw new Error('Failed to Read file...')
+    
   }
+
 };
 
 const writeBankUsersToFile = (users)=>{

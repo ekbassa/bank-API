@@ -9,8 +9,8 @@ import uniqid from "uniqid";
 // @route GET /api/v1/users
 // @access GET /api/v1/users
 export const getAllUsers = async (req, res, next) => {
-  const users = readBankUsersFromFile();
   try {
+    const users = readBankUsersFromFile();
     res.status(STATUS_CODE.OK).send(users);
   } catch (error) {
     next(error);
@@ -68,7 +68,36 @@ export const createUser = async (req, res, next) => {
 // @des update User
 // @route put /api/v1/users/:id
 // @access GET /api/v1/users
-export const updateUser = async (req, res, next) => {};
+export const updateUser = async (req, res, next) => {
+  try {
+    const { name, cash, credit } = req.body;
+
+    if (!name || !cash || !credit) {
+      //change the code status
+      res.status(STATUS_CODE.BAD_REQUEST);
+      throw new Error("Error: All fields name, cash and credit  are required");
+    }
+
+    const users = readBankUsersFromFile();
+    const index = users.findIndex((usr)=>usr.id === req.params.id);
+    if (index === -1){
+        res.status(STATUS_CODE.NOT_FOUND)
+        throw new Error('User was not found ')
+    }
+    const lastIndex = users.findLastIndex(usr => usr.name === name)
+    if (lastIndex != -1 && lastIndex != index){
+        res.status(STATUS_CODE.BAD_REQUEST)
+        throw new Error('cannot edit user, user with such name is already exists!')
+    }
+    const updatedUser = {...users[index],name,cash,credit}
+    users[index] = updatedUser;
+    writeBankUsersToFile(users)
+    res.send(updatedUser)
+
+  } catch (error) {
+    next(error)
+  }
+};
 
 // @des delete a User
 // @route Delete /api/v1/users/:id
@@ -77,15 +106,17 @@ export const deleteUser = async (req, res, next) => {
   try {
     const users = readBankUsersFromFile();
     const newUsersList = users.filter((user) => user.id !== req.params.id);
-    
+
     //check if a user was deleted by comparing the length of the two arrays
-    if (users.length > newUsersList.length){
-        writeBankUsersToFile(newUsersList);
-        res.status(STATUS_CODE.OK).send(`User with id ${req.params.id} was deleted successfully`)
-    }else{
-        // user was not found
-        res.status(STATUS_CODE.NOT_FOUND)
-        throw new Error('User was not found!')
+    if (users.length > newUsersList.length) {
+      writeBankUsersToFile(newUsersList);
+      res
+        .status(STATUS_CODE.OK)
+        .send(`User with id ${req.params.id} was deleted successfully`);
+    } else {
+      // user was not found
+      res.status(STATUS_CODE.NOT_FOUND);
+      throw new Error("User was not found!");
     }
     // res.send(users);
   } catch (error) {
