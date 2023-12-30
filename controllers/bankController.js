@@ -23,22 +23,29 @@ export const getAllUsers = async (req, res, next) => {
 // @access Public
 export const createUser = async (req, res, next) => {
   try {
-    const { name, cash, credit,isActive } = req.body;
+    const { userName, cash, credit, isActive } = req.body;
 
-    if (!name || cash === undefined || credit === undefined || isActive === undefined) {
+    if (
+      !userName ||
+      cash === undefined ||
+      credit === undefined ||
+      isActive === undefined
+    ) {
       //change the code status
       res.status(STATUS_CODE.BAD_REQUEST);
-      throw new Error("Error: All fields name, cash, credit and isActive are required");
+      throw new Error(
+        "Error: All fields name, cash, credit and isActive are required"
+      );
     }
 
     const users = readBankUsersFromFile();
     //check for name duplicate
-    if (users.some((user) => user.name === name)) {
+    if (users.some((user) => user.name === userName)) {
       res.status(STATUS_CODE.CONFLICT);
       throw new Error("user with the same name is already exist");
     }
 
-    const newUser = { id: uniqid(), name, cash, credit,isActive };
+    const newUser = { id: uniqid(), userName, cash, credit, isActive };
     users.push(newUser);
     writeBankUsersToFile(users);
     res.status(STATUS_CODE.CREATED).send(newUser);
@@ -71,9 +78,14 @@ export const getUserById = async (req, res, next) => {
 // @access public
 export const updateUser = async (req, res, next) => {
   try {
-    const { name, cash, credit, isActive } = req.body;
+    const { userName, cash, credit, isActive } = req.body;
 
-    if (!name || cash === undefined || credit === undefined || isActive === undefined) {
+    if (
+      !userName ||
+      cash === undefined ||
+      credit === undefined ||
+      isActive === undefined
+    ) {
       //change the code status
       res.status(STATUS_CODE.BAD_REQUEST);
       throw new Error("Error: All fields name, cash and credit  are required");
@@ -85,14 +97,14 @@ export const updateUser = async (req, res, next) => {
       res.status(STATUS_CODE.NOT_FOUND);
       throw new Error("User was not found ");
     }
-    const lastIndex = users.findLastIndex((usr) => usr.name === name);
+    const lastIndex = users.findLastIndex((usr) => usr.name === userName);
     if (lastIndex != -1 && lastIndex != index) {
       res.status(STATUS_CODE.BAD_REQUEST);
       throw new Error(
         "cannot edit user, user with such name is already exists!"
       );
     }
-    const updatedUser = { ...users[index], name, cash, credit,isActive };
+    const updatedUser = { ...users[index], userName, cash, credit, isActive };
     users[index] = updatedUser;
     writeBankUsersToFile(users);
     res.send(updatedUser);
@@ -128,15 +140,26 @@ export const deleteUser = async (req, res, next) => {
 
 // @des Deposit Cash to a User
 // @route Put /api/v1/transactions/deposit-cash/:id
-// @access public /api/v1/users
+// @access public
 export const depositCashToUser = (req, res, next) => {
   try {
-    const { name, cash, credit,isActive } = req.body;
-    if (!name || cash === undefined || credit === undefined || isActive === undefined) {
+    const { userName, cash, credit, isActive } = req.body;
+    if (
+      // !userName ||
+      cash === undefined ||
+      credit === undefined ||
+      isActive === undefined
+    ) {
       //change the code status
       res.status(STATUS_CODE.BAD_REQUEST);
-      throw new Error("Error: All fields name, cash ,credit and isActive are required");
+      throw new Error("Error: All fields name, cash and credit  are required");
     }
+
+    if (cash < 0){
+      res.status(STATUS_CODE.FORBIDDEN)
+      throw new Error('Deposit amount should be greater than Zero')
+    }
+
     const users = readBankUsersFromFile();
 
     //find the specific user
@@ -146,13 +169,21 @@ export const depositCashToUser = (req, res, next) => {
       res.status(STATUS_CODE.NOT_FOUND);
       throw new Error("User was  not found ");
     }
+
+    // check if the user account is active
+    if (!users[userIndex].isActive) {
+      res.status(STATUS_CODE.FORBIDDEN);
+      throw new Error("User Account is Inactive, cannot perform a deposit!");
+    }
+    
+
     const originalUser = users[userIndex];
     const originalUserCash = originalUser.cash;
     const newUserCash = originalUserCash + cash;
 
     const updatedUser = {
       ...users[userIndex],
-      name,
+      userName,
       cash: newUserCash,
       credit,
       isActive,
@@ -167,8 +198,8 @@ export const depositCashToUser = (req, res, next) => {
   }
 };
 // @des Update User Credit
-// @route GET /api/v1/users/:id
-// @access GET /api/v1/users
+// @route PUT /api/v1/users/transactions/deposit-credit/:id
+// @access Public
 export const updateUserCredit = async (req, res, next) => {};
 // @des transferMoneyFromUserToAnotherUser
 // @route GET /api/v1/users/:id

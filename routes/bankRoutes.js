@@ -32,7 +32,7 @@ router.delete("/users/:id", deleteUser);
 router.put("/transactions/deposit-cash/:id", depositCashToUser);
 
 //Route to Update User Credit
-router.put("./:id", updateUserCredit);
+router.put("/transactions/deposit-credit/:id", updateUserCredit);
 
 //Route Transfer money to another User
 router.put("/:id&id", transferMoneyFromUserToAnotherUser);
