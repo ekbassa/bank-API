@@ -279,11 +279,47 @@ export const withdrawFromAccount = (req, res, next) => {
     next(error);
   }
 };
-// @des transferMoneyFromUserToAnotherUser
-// @route GET /api/v1/users/:id
-// @access GET /api/v1/users
-export const transferMoneyFromUserToAnotherUser = async (req, res, next) => {};
-// @des filterUsersByAmountOfCash
-// @route GET /api/v1/users/:amoutOfCash
-// @access GET /api/v1/users
-export const filterUsersByAmountOfCash = async (req, res, next) => {};
+// @des getActiveAccountUsers
+// @route GET /api/v1/accounts/active-users
+// @access Public
+export const getActiveAccountUsers =  (req, res, next) => {
+  try {
+    const users = readBankUsersFromFile();
+    const activeUserAccount = users.filter((user)=> user.isActive);
+   
+   if (activeUserAccount.length > 0){
+    res.send(activeUserAccount)
+   }
+   else{
+    res.status(STATUS_CODE.NO_CONTENT)
+    throw new Error('No Active Account Were Found!')
+   }
+
+  } catch (error) {
+    next(error)
+  }
+};
+
+
+
+// @des filter according inactive accounts
+// @route GET /api/v1/users/accounts/inactive-accounts
+// @access Public
+export const getInActiveAccountUsers =  (req, res, next) => {
+  try {
+    const users = readBankUsersFromFile();
+    const inActiveAccounts = users.filter((user)=>user.isActive === false);
+
+    if (inActiveAccounts.length > 0){
+      res.send(inActiveAccounts)
+     }
+     else{
+      res.status(STATUS_CODE.NO_CONTENT)
+      throw new Error('No Active Account Were Found!')
+     }
+
+    
+  } catch (error) {
+    next(error);
+  }
+};

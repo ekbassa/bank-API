@@ -8,8 +8,9 @@ import {
   depositCashToUser,
   updateUserCredit,
   withdrawFromAccount,
-  transferMoneyFromUserToAnotherUser,
-  filterUsersByAmountOfCash
+  getActiveAccountUsers,
+  getInActiveAccountUsers
+  
 } from "../controllers/bankController.js";
 
 const router = express.Router();
@@ -37,10 +38,11 @@ router.put("/transactions/update-credit/:id", updateUserCredit);
 //Route to Withdraw money 
 router.put("/transactions/withdraw/:id", withdrawFromAccount);
 
-//Route Transfer money to another User
-router.put("/:id&id", transferMoneyFromUserToAnotherUser);
+//filter according Active users
+router.get("/accounts/active-accounts",getActiveAccountUsers)
+//filter according inActive users
+router.get("/accounts/inactive-accounts",getInActiveAccountUsers)
 
-//Route to filter Users by amount of cash they have
-router.get("/", filterUsersByAmountOfCash);
+
 
 export default router
