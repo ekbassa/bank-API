@@ -6,8 +6,9 @@ import {
   updateUser,
   deleteUser,
   depositCashToUser,
-  transferMoneyFromUserToAnotherUser,
   updateUserCredit,
+  withdrawFromAccount,
+  transferMoneyFromUserToAnotherUser,
   filterUsersByAmountOfCash
 } from "../controllers/bankController.js";
 
@@ -33,6 +34,8 @@ router.put("/transactions/deposit-cash/:id", depositCashToUser);
 
 //Route to Update User Credit
 router.put("/transactions/update-credit/:id", updateUserCredit);
+//Route to Withdraw money 
+router.put("/transactions/withdraw/:id", withdrawFromAccount);
 
 //Route Transfer money to another User
 router.put("/:id&id", transferMoneyFromUserToAnotherUser);

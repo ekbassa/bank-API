@@ -155,9 +155,9 @@ export const depositCashToUser = (req, res, next) => {
       throw new Error("Error: All fields name, cash and credit  are required");
     }
 
-    if (cash < 0){
-      res.status(STATUS_CODE.FORBIDDEN)
-      throw new Error('Deposit amount should be greater than Zero')
+    if (cash < 0) {
+      res.status(STATUS_CODE.FORBIDDEN);
+      throw new Error("Deposit amount should be greater than Zero");
     }
 
     const users = readBankUsersFromFile();
@@ -175,7 +175,6 @@ export const depositCashToUser = (req, res, next) => {
       res.status(STATUS_CODE.FORBIDDEN);
       throw new Error("User Account is Inactive, cannot perform a deposit!");
     }
-    
 
     const originalUser = users[userIndex];
     const originalUserCash = originalUser.cash;
@@ -200,36 +199,85 @@ export const depositCashToUser = (req, res, next) => {
 // @des Update User Credit
 // @route PUT /api/v1/users/transactions/deposit-credit/:id
 // @access Public
-export const updateUserCredit = async (req, res, next) => {
+export const updateUserCredit = (req, res, next) => {
   try {
     const users = readBankUsersFromFile();
-    const userIndex = users.findIndex(usr => usr.id === req.params.id);
-    if(userIndex === -1){
+    const userIndex = users.findIndex((usr) => usr.id === req.params.id);
+    if (userIndex === -1) {
       res.status(STATUS_CODE.NOT_FOUND);
-      throw new Error('User not found!')
+      throw new Error("User not found!");
     }
-    if(req.query.credit < 0 ){
-      res.status(STATUS_CODE.FORBIDDEN)
-      throw new Error('Failed to update the credit, credit must be positive!')
+    if (req.query.credit < 0) {
+      res.status(STATUS_CODE.FORBIDDEN);
+      throw new Error("Failed to update the credit, credit must be positive!");
     }
-    if (!users[userIndex].isActive){
+    if (!users[userIndex].isActive) {
       // throw an error
-      res.status(STATUS_CODE.FORBIDDEN)
-      throw new Error('The User account is Inactive, cannot Update the credit!')
-    }else{
+      res.status(STATUS_CODE.FORBIDDEN);
+      throw new Error(
+        "The User account is Inactive, cannot Update the credit!"
+      );
+    } else {
       const updatedUser = {
         ...users[userIndex],
-        credit : +req.query.credit
+        credit: +req.query.credit,
       };
       users[userIndex] = updatedUser;
-      writeBankUsersToFile(users)
-      res.send(updatedUser)
+      writeBankUsersToFile(users);
+      res.send(updatedUser);
     }
-    
   } catch (error) {
-    next(error)
+    next(error);
   }
+};
 
+//@des withdraw money from the user account
+// @route PUT /api/v1/users/transactions/withdraw/:id
+export const withdrawFromAccount = (req, res, next) => {
+  try {
+    const users = readBankUsersFromFile();
+    const userIndex = users.findIndex((usr) => usr.id === req.params.id);
+
+    if (userIndex === -1) {
+      res.status(STATUS_CODE.NOT_FOUND);
+      throw new Error("User not found!");
+    }
+
+    const withdrawalAmount = req.query.withdraw;
+    const currentCash = users[userIndex].cash;
+    const currentCredit = users[userIndex].credit;
+
+    if (currentCash + currentCredit < withdrawalAmount) {
+      res.status(STATUS_CODE.FORBIDDEN);
+      throw new Error("Not enough coverage in the account!   ");
+    }
+    //check id the account is active
+    if (users[userIndex].isActive) {
+      if (currentCash >= withdrawalAmount) {
+        const updatedUser = {
+          ...users[userIndex],
+          cash: currentCash - withdrawalAmount,
+        };
+
+        users[userIndex] = updatedUser;
+        writeBankUsersToFile(users);
+        res.send(updatedUser);
+      }
+      if (withdrawalAmount > currentCash) {
+        const updatedUser = {
+          ...users[userIndex],
+          cash: 0,
+          credit: currentCredit - (withdrawalAmount - currentCash),
+        };
+        users[userIndex] = updatedUser;
+        writeBankUsersToFile(users);
+        res.send(updatedUser);
+      }
+    }
+    //there is enough money in the credit balance
+  } catch (error) {
+    next(error);
+  }
 };
 // @des transferMoneyFromUserToAnotherUser
 // @route GET /api/v1/users/:id
