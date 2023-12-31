@@ -1,8 +1,15 @@
 import fs from "fs";
 import { filePath } from "../utils/dataFilePath.js";
 
+const initializeUsersFile = () => {
+  if (!fs.existsSync(filePath)){
+    fs.writeFileSync(filePath,JSON.stringify([]),'utf8')
+  }
+}
+
 const readBankUsersFromFile = () => {
   try {
+    initializeUsersFile();
     if (!fs.existsSync(filePath)){
       throw new Error (`File not found: ${filePath}`)
     }
@@ -18,8 +25,8 @@ const readBankUsersFromFile = () => {
 };
 
 const writeBankUsersToFile = (users)=>{
-
     try {
+      initializeUsersFile();
         const dataJson = JSON.stringify(users);
         fs.writeFileSync(filePath,dataJson,'utf-8')
         
